@@ -1,0 +1,18 @@
+appId: com.giahung.notes-markdown
+productName: Notes
+directories:
+  buildResources: build
+files:
+  - out/**
+  - resources/**
+  - package.json
+asar: true
+win:
+  target: nsis
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+mac:
+  target: dmg
+linux:
+  target: AppImage
