@@ -1,7 +1,8 @@
-import { app, BrowserWindow, net, protocol, shell } from 'electron'
+import { app, BrowserWindow, Menu, net, protocol, shell } from 'electron'
 import { join } from 'node:path'
 import { pathToFileURL } from 'node:url'
 import { getVault, registerIpc, setupVault } from './ipc'
+import { loadConfig } from './config'
 import icon from '../../resources/icon.png?asset'
 import { stopWatcher } from './watcher'
 
@@ -30,6 +31,27 @@ function createWindow(): BrowserWindow {
 
   win.on('ready-to-show', () => win.show())
 
+  // restore the zoom the user picked with Ctrl+= / Ctrl+-
+  win.webContents.on('did-finish-load', () => {
+    void loadConfig().then((c) => {
+      // zoomLevel holds a zoom *factor* (1 = 100%); older configs stored a Chromium level, ignore those
+      if (c.zoomLevel && c.zoomLevel >= 0.5 && c.zoomLevel <= 3) win.webContents.setZoomFactor(c.zoomLevel)
+    })
+  })
+
+  // no application menu (the renderer owns every shortcut); keep dev-tools access while developing
+  win.webContents.on('before-input-event', (event, input) => {
+    if (app.isPackaged || input.type !== 'keyDown' || !input.control) return
+    const key = input.key.toLowerCase()
+    if (input.shift && key === 'i') {
+      win.webContents.toggleDevTools()
+      event.preventDefault()
+    } else if (!input.shift && key === 'r') {
+      win.webContents.reload()
+      event.preventDefault()
+    }
+  })
+
   win.webContents.setWindowOpenHandler(({ url }) => {
     if (/^https?:/i.test(url)) shell.openExternal(url)
     return { action: 'deny' }
@@ -46,6 +68,8 @@ function createWindow(): BrowserWindow {
 protocol.registerSchemesAsPrivileged([
   { scheme: 'vault', privileges: { standard: true, secure: true, supportFetchAPI: true, stream: true } },
 ])
+
+Menu.setApplicationMenu(null)
 
 app.whenReady().then(async () => {
   // vault://local/<relative path> serves images and attachments from inside the notes folder

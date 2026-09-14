@@ -134,7 +134,20 @@ export const editorTheme = EditorView.theme({
     color: 'var(--link)',
     textDecoration: 'underline',
     textUnderlineOffset: '3px',
+    textDecorationColor: 'color-mix(in oklch, var(--link) 45%, transparent)',
     cursor: 'pointer',
+  },
+  '.cm-link-external': {
+    color: 'var(--link-external)',
+    textDecorationStyle: 'dotted',
+    textDecorationColor: 'color-mix(in oklch, var(--link-external) 60%, transparent)',
+  },
+  '.cm-link-external::after': {
+    content: '"↗"',
+    fontSize: '0.7em',
+    marginLeft: '0.15em',
+    verticalAlign: 'super',
+    opacity: '0.7',
   },
   '.cm-hashtag': {
     color: 'var(--link)',

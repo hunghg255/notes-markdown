@@ -98,4 +98,20 @@ export function registerIpc(win: BrowserWindow): void {
   ipcMain.on(IPC.windowMinimize, () => win.minimize())
   ipcMain.on(IPC.windowMaximize, () => (win.isMaximized() ? win.unmaximize() : win.maximize()))
   ipcMain.on(IPC.windowClose, () => win.close())
+  // Chrome's preset zoom steps: fractional zoom levels make text render blurry on Windows
+  const ZOOM_STEPS = [0.67, 0.75, 0.8, 0.9, 1, 1.1, 1.25, 1.5, 1.75, 2]
+  ipcMain.handle(IPC.windowZoom, async (_e, dir: 'in' | 'out' | 'reset') => {
+    const wc = win.webContents
+    const current = wc.getZoomFactor()
+    let idx = ZOOM_STEPS.findIndex((z) => Math.abs(z - current) < 0.01)
+    if (idx === -1) idx = ZOOM_STEPS.indexOf(1)
+    const nextIdx =
+      dir === 'reset'
+        ? ZOOM_STEPS.indexOf(1)
+        : Math.min(ZOOM_STEPS.length - 1, Math.max(0, idx + (dir === 'in' ? 1 : -1)))
+    const factor = ZOOM_STEPS[nextIdx]
+    wc.setZoomFactor(factor)
+    await updateConfig({ zoomLevel: factor })
+    return factor
+  })
 }

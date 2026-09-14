@@ -17,6 +17,24 @@ export function useHotkeys() {
       }
       if (!mod) return
 
+      // UI zoom: Ctrl+= / Ctrl++ / numpad + → in, Ctrl+- → out, Ctrl+0 → reset
+      const code = e.code
+      if (key === '=' || key === '+' || code === 'NumpadAdd') {
+        e.preventDefault()
+        void window.api.window.zoom('in')
+        return
+      }
+      if (key === '-' || key === '_' || code === 'NumpadSubtract') {
+        e.preventDefault()
+        void window.api.window.zoom('out')
+        return
+      }
+      if (key === '0' && !e.altKey) {
+        e.preventDefault()
+        void window.api.window.zoom('reset')
+        return
+      }
+
       if (key === 'f' && e.shiftKey) {
         e.preventDefault()
         ui.toggleFocusMode()

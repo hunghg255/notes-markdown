@@ -31,7 +31,7 @@ const saveTimers = new Map<string, ReturnType<typeof setTimeout>>()
 
 export const useEditorStore = create<EditorState>((set, get) => ({
   docs: {},
-  stats: { words: 0, characters: 0, paragraphs: 0 },
+  stats: { words: 0, characters: 0, paragraphs: 0, minutes: 0 },
   ownWrites: {},
   load: async (path, force = false) => {
     const existing = get().docs[path]

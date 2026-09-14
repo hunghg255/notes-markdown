@@ -1,3 +1,4 @@
+import { formatReadingTime } from '@/lib/stats'
 import { useEditorStore } from '@/stores/editorStore'
 
 export function StatusBar({ path }: { path: string }) {
@@ -17,6 +18,9 @@ export function StatusBar({ path }: { path: string }) {
       </span>
       <span>
         <span className="text-foreground/80">{stats.paragraphs}</span> paragraphs
+      </span>
+      <span title="Estimated reading time at 200 words per minute">
+        <span className="text-foreground/80">{formatReadingTime(stats.minutes)}</span> read
       </span>
     </div>
   )

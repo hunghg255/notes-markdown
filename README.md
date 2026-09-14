@@ -7,11 +7,12 @@ Local-first markdown notes app. Every note is a plain `.md` file in a folder you
 - CodeMirror 6 **live preview** editor (Obsidian-style): headings, bold/italic, links,
   task checkboxes, code blocks with syntax highlighting, KaTeX math, Mermaid diagrams
   (via `beautiful-mermaid`), images from the vault, `#tags`, YAML frontmatter, `[[wiki links]]` with `[[` autocomplete
-  (click opens the note, or creates it if missing; `[[Note|alias]]`, `![[image.png]]` embeds)
+  (click opens the note, or creates it if missing; `[[Note|alias]]`, `[[Note#Heading]]`, `![[image.png]]` embeds);
+  internal links use the accent colour, external `http(s)` links a distinct colour with ↗
 - Sidebar file tree (drag & drop to move notes/folders), tabs with back/forward history, command palette (`Ctrl+P`),
   daily notes (`Ctrl+D`), slash commands (`/todo`, `/code`, …), emoji (`:smile`)
 - Sidebar sections: Pinned, Recent, Tags (click a tag for a filtered view)
-- Views: **Tasks** (every open `- [ ]` across the vault, tick in place), **Graph** (wiki-link graph),
+- Views: **Tasks** (every open `- [ ]` across the vault, tick in place), **Graph** (wiki-link graph: folder colours, hover to highlight neighbours, search, local mode),
   **Find & Replace** across all notes
 - **Outline** (table of contents) floating at the top-right of the note; click to jump, current section highlighted
 - Frontmatter shown as an editable **Properties** panel above the note

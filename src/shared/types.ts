@@ -9,6 +9,10 @@ export interface AppConfig {
   accent: Accent
   fontSize: number
   autosave: boolean
+  /** UI zoom factor of the window, persisted (1 = 100%) */
+  zoomLevel?: number
+  /** fade lines away from the cursor while in focus mode */
+  focusDim?: boolean
 }
 
 export interface TreeNode {
@@ -89,6 +93,7 @@ export const IPC = {
   windowMinimize: 'window:minimize',
   windowMaximize: 'window:maximize',
   windowClose: 'window:close',
+  windowZoom: 'window:zoom',
   eventVaultChanged: 'vault:changed',
 } as const
 
@@ -126,6 +131,8 @@ export interface Api {
     minimize(): void
     maximize(): void
     close(): void
+    /** zoom the whole UI; returns the new zoom level (0 = 100%) */
+    zoom(dir: 'in' | 'out' | 'reset'): Promise<number>
   }
   platform: NodeJS.Platform
 }

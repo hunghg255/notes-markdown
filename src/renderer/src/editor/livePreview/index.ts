@@ -24,6 +24,9 @@ export const livePreviewConfig = Facet.define<LivePreviewOptions, LivePreviewOpt
 })
 
 const hide = Decoration.replace({})
+/** external links (http, mailto, …) get a different colour than links between notes */
+const linkClass = (href: string) =>
+  /^(https?:|mailto:|ftp:|tel:)/i.test(href) ? 'cm-link-rendered cm-link-external' : 'cm-link-rendered cm-link-internal'
 const syntaxMark = Decoration.mark({ class: 'cm-syntax-mark' })
 const headerMark = Decoration.mark({ class: 'cm-header-mark' })
 const listMark = Decoration.mark({ class: 'cm-list-mark' })
@@ -151,7 +154,7 @@ function buildDecorations(state: EditorState): DecorationSet {
         const href = url ? doc.sliceString(url.from, url.to) : doc.sliceString(textFrom, textTo)
         if (textTo > textFrom) {
           decos.push(
-            Decoration.mark({ class: 'cm-link-rendered', attributes: { 'data-href': href, title: href } }).range(
+            Decoration.mark({ class: linkClass(href), attributes: { 'data-href': href, title: href } }).range(
               textFrom,
               textTo,
             ),
@@ -172,7 +175,7 @@ function buildDecorations(state: EditorState): DecorationSet {
         const href = 'wiki:' + doc.sliceString(target.from, target.to).trim()
         decos.push(
           Decoration.mark({
-            class: 'cm-link-rendered cm-wikilink',
+            class: 'cm-link-rendered cm-link-internal cm-wikilink',
             attributes: { 'data-href': href, title: href.slice(5) },
           }).range(shown.from, shown.to),
         )
@@ -203,7 +206,7 @@ function buildDecorations(state: EditorState): DecorationSet {
         const inner = url ?? { from: from + 1, to: to - 1 }
         const href = doc.sliceString(inner.from, inner.to)
         decos.push(
-          Decoration.mark({ class: 'cm-link-rendered', attributes: { 'data-href': href } }).range(inner.from, inner.to),
+          Decoration.mark({ class: linkClass(href), attributes: { 'data-href': href } }).range(inner.from, inner.to),
         )
         if (!active()) for (const m of marks) hideRange(m.from, m.to)
         return false
@@ -213,7 +216,7 @@ function buildDecorations(state: EditorState): DecorationSet {
         const parent = ref.node.parent?.name
         if (parent === 'Link' || parent === 'Image' || parent === 'Autolink') return
         const href = doc.sliceString(from, to)
-        decos.push(Decoration.mark({ class: 'cm-link-rendered', attributes: { 'data-href': href } }).range(from, to))
+        decos.push(Decoration.mark({ class: linkClass(href), attributes: { 'data-href': href } }).range(from, to))
         return
       }
       case 'Image': {

@@ -123,9 +123,10 @@ export const formattingKeymap: KeyBinding[] = [
   { key: 'Mod-k', run: insertLink },
   { key: 'Mod-Enter', run: toggleTask },
   { key: 'Mod-l', run: toggleTask },
-  { key: 'Mod-1', run: setHeading(1) },
-  { key: 'Mod-2', run: setHeading(2) },
-  { key: 'Mod-3', run: setHeading(3) },
-  { key: 'Mod-4', run: setHeading(4) },
-  { key: 'Mod-0', run: setHeading(0) },
+  // Ctrl+Alt+N so Ctrl+0 / Ctrl+= / Ctrl+- stay free for UI zoom
+  { key: 'Mod-Alt-1', run: setHeading(1) },
+  { key: 'Mod-Alt-2', run: setHeading(2) },
+  { key: 'Mod-Alt-3', run: setHeading(3) },
+  { key: 'Mod-Alt-4', run: setHeading(4) },
+  { key: 'Mod-Alt-0', run: setHeading(0) },
 ]

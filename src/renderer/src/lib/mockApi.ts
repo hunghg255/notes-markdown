@@ -166,7 +166,17 @@ export function installMockApi() {
       showInFolder: async () => {},
     },
     export: { file: async () => null },
-    window: { minimize() {}, maximize() {}, close() {} },
+    window: {
+      minimize() {},
+      maximize() {},
+      close() {},
+      zoom: async (dir) => {
+        const cur = Number(document.documentElement.style.zoom || 1)
+        const next = dir === 'reset' ? 1 : dir === 'in' ? Math.min(2, cur * 1.1) : Math.max(0.5, cur / 1.1)
+        document.documentElement.style.zoom = String(next)
+        return next
+      },
+    },
     platform: 'win32',
   }
   ;(window as unknown as { api: Api }).api = api

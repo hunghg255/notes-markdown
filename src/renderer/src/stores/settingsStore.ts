@@ -20,6 +20,10 @@ function applyAccent(accent: AppConfig['accent']) {
   document.documentElement.dataset.accent = accent
 }
 
+function applyFocusDim(on: boolean | undefined) {
+  document.documentElement.dataset.focusDim = on ? 'on' : 'off'
+}
+
 export const useSettingsStore = create<SettingsState>((set) => ({
   config: fallback,
   loaded: false,
@@ -27,12 +31,14 @@ export const useSettingsStore = create<SettingsState>((set) => ({
     const config = await window.api.config.get()
     applyTheme(config.theme)
     applyAccent(config.accent ?? 'orange')
+    applyFocusDim(config.focusDim)
     set({ config, loaded: true })
   },
   update: async (patch) => {
     const config = await window.api.config.set(patch)
     if (patch.theme) applyTheme(config.theme)
     if (patch.accent) applyAccent(config.accent)
+    if ('focusDim' in patch) applyFocusDim(config.focusDim)
     set({ config })
   },
 }))

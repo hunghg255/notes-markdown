@@ -68,6 +68,9 @@ export function SettingsView() {
               ))}
             </div>
           </Row>
+          <Row label="Dim text in focus mode" hint="Off by default. Slightly fades lines away from the cursor while in focus mode (Ctrl+Shift+F).">
+            <Switch checked={config.focusDim === true} onCheckedChange={(v) => void update({ focusDim: v })} />
+          </Row>
           <Row label="Editor font size">
             <Input
               type="number"
@@ -149,7 +152,8 @@ const shortcuts: [string, string][] = [
   ['Ctrl+B / Ctrl+I / Ctrl+E', 'Bold / italic / inline code'],
   ['Ctrl+K', 'Insert link'],
   ['Ctrl+Enter', 'Toggle task checkbox'],
-  ['Ctrl+1…4, Ctrl+0', 'Heading level / paragraph'],
+  ['Ctrl+Alt+1…4, Ctrl+Alt+0', 'Heading level / paragraph'],
+  ['Ctrl+= / Ctrl+- / Ctrl+0', 'Zoom in / out / reset'],
   ['Ctrl+F', 'Find in note'],
   ['[[', 'Link to another note (wiki-link)'],
   ['Ctrl+Shift+F', 'Focus mode (Esc to leave)'],

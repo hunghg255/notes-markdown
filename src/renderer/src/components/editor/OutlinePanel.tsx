@@ -25,7 +25,7 @@ export function OutlinePanel({ path }: { path: string }) {
   const focusMode = useUiStore((s) => s.focusMode)
 
   const headings = useMemo(() => indexNote(content).headings, [content])
-  if (focusMode || headings.length < 2) return null
+  if (headings.length < 2) return null
 
   // the current section is the last heading at or above the cursor
   let activeIdx = -1
@@ -53,7 +53,12 @@ export function OutlinePanel({ path }: { path: string }) {
   }
 
   return (
-    <aside className="absolute top-3 right-4 z-10 hidden w-56 @[1000px]:block">
+    <aside
+      className={cn(
+        'absolute top-3 right-4 z-10 hidden w-56 @[1000px]:block',
+        focusMode && 'opacity-40 transition-opacity duration-300 hover:opacity-100',
+      )}
+    >
       <div className="text-muted-foreground flex h-8 items-center justify-between pr-1 pl-2 text-[11px] font-semibold tracking-wider uppercase">
         <span>Outline</span>
         <button

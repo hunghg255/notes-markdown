@@ -33,6 +33,7 @@
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
   --link: oklch(0.68 0.19 45);
+  --link-external: oklch(0.55 0.13 215);
   --code-bg: oklch(0.95 0 0);
   --syntax-keyword: #a626a4;
   --syntax-name: #e45649;
@@ -71,6 +72,7 @@
   --sidebar-border: oklch(1 0 0 / 8%);
   --sidebar-ring: oklch(0.5 0 0);
   --link: oklch(0.74 0.18 45);
+  --link-external: oklch(0.78 0.11 215);
   --code-bg: oklch(0.26 0 0);
   --syntax-keyword: #c678dd;
   --syntax-name: #e06c75;
@@ -163,6 +165,7 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-link: var(--link);
+  --color-link-external: var(--link-external);
   --color-code-bg: var(--code-bg);
   --font-sans: ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
   --font-mono: ui-monospace, 'Cascadia Code', 'JetBrains Mono', Menlo, Consolas, monospace;
@@ -234,13 +237,14 @@
   transform: rotate(45deg);
 }
 
-/* focus mode: dim everything except the paragraph with the cursor */
-.focus-mode .cm-line {
-  transition: opacity 0.2s;
-  opacity: 0.35;
+/* focus mode: gently fade the lines away from the cursor (only while the editor has focus,
+   and only when the "dim" option is on) */
+/* opt-in via Settings → "Dim text in focus mode" */
+:root[data-focus-dim='on'] .focus-mode .cm-editor.cm-focused .cm-line {
+  transition: opacity 0.25s;
+  opacity: 0.7;
 }
-.focus-mode .cm-line.cm-activeLine,
-.focus-mode .cm-line:has(.cm-cursor) {
+:root[data-focus-dim='on'] .focus-mode .cm-editor.cm-focused .cm-line.cm-activeLine {
   opacity: 1;
 }
 .focus-mode .cm-content {

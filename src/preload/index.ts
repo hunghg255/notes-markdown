@@ -38,6 +38,7 @@ const api: Api = {
     minimize: () => ipcRenderer.send(IPC.windowMinimize),
     maximize: () => ipcRenderer.send(IPC.windowMaximize),
     close: () => ipcRenderer.send(IPC.windowClose),
+    zoom: (dir) => ipcRenderer.invoke(IPC.windowZoom, dir),
   },
   platform: process.platform,
 }

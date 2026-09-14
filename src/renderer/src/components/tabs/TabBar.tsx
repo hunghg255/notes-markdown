@@ -20,7 +20,23 @@ import {
 import { copyNoteAsHtml, copyNoteAsMarkdown, exportNote } from '@/lib/export'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { cn } from '@/lib/utils'
-import { closeTab, createNote, openGraphView, openSearchView, openTasksView } from '@/lib/actions'
+import {
+  closeOtherTabs,
+  closeTab,
+  closeTabsToRight,
+  createNote,
+  openGraphView,
+  openSearchView,
+  openTasksView,
+} from '@/lib/actions'
+import {
+  ContextMenu,
+  ContextMenuContent,
+  ContextMenuItem,
+  ContextMenuSeparator,
+  ContextMenuShortcut,
+  ContextMenuTrigger,
+} from '@/components/ui/context-menu'
 import { useEditorStore } from '@/stores/editorStore'
 import { useTabsStore } from '@/stores/tabsStore'
 import { isViewTab, viewTitle } from '@/lib/views'
@@ -140,41 +156,73 @@ function TabItem({ id, active, onActivate }: { id: string; active: boolean; onAc
     return !!d && d.content !== d.saved
   })
   const title = isViewTab(id) ? viewTitle(id) : noteTitle(id)
+  const tabs = useTabsStore((s) => s.tabs)
+  const idx = tabs.findIndex((t) => t.id === id)
+  const hasOthers = tabs.length > 1
+  const hasRight = idx !== -1 && idx < tabs.length - 1
   return (
-    <div
-      role="tab"
-      aria-selected={active}
-      tabIndex={0}
-      onClick={onActivate}
-      onKeyDown={(e) => e.key === 'Enter' && onActivate()}
-      onAuxClick={(e) => e.button === 1 && void closeTab(id)}
-      title={id}
-      className={cn(
-        'group flex h-8 max-w-56 shrink-0 cursor-default items-center gap-1 rounded-lg pr-1 pl-3 text-[13.5px] transition-colors select-none',
-        active ? 'bg-accent text-accent-foreground' : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
-      )}
-    >
-      <span className="truncate">{title}</span>
-      <button
-        type="button"
-        aria-label="Close tab"
-        onClick={(e) => {
-          e.stopPropagation()
-          void closeTab(id)
-        }}
-        className={cn(
-          'hover:bg-foreground/10 ml-1 flex size-5 shrink-0 items-center justify-center rounded-md',
-          !active && !dirty && 'opacity-0 group-hover:opacity-100',
+    <ContextMenu>
+      <ContextMenuTrigger asChild>
+        <div
+          role="tab"
+          aria-selected={active}
+          tabIndex={0}
+          onClick={onActivate}
+          onKeyDown={(e) => e.key === 'Enter' && onActivate()}
+          onAuxClick={(e) => e.button === 1 && void closeTab(id)}
+          title={id}
+          className={cn(
+            'group flex h-8 max-w-56 shrink-0 cursor-default items-center gap-1 rounded-lg pr-1 pl-3 text-[13.5px] transition-colors select-none',
+            active
+              ? 'bg-accent text-accent-foreground'
+              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground',
+          )}
+        >
+          <span className="truncate">{title}</span>
+          <button
+            type="button"
+            aria-label="Close tab"
+            onClick={(e) => {
+              e.stopPropagation()
+              void closeTab(id)
+            }}
+            className={cn(
+              'hover:bg-foreground/10 ml-1 flex size-5 shrink-0 items-center justify-center rounded-md',
+              !active && !dirty && 'opacity-0 group-hover:opacity-100',
+            )}
+          >
+            {dirty ? <span className="bg-primary block size-2 rounded-full group-hover:hidden" /> : null}
+            <HugeiconsIcon
+              icon={Cancel01Icon}
+              size={12}
+              strokeWidth={2}
+              className={cn(dirty && 'hidden group-hover:block')}
+            />
+          </button>
+        </div>
+      </ContextMenuTrigger>
+      <ContextMenuContent className="w-52">
+        <ContextMenuItem onSelect={() => void closeTab(id)}>
+          Close
+          <ContextMenuShortcut>{isMac ? '⌘' : 'Ctrl'}+W</ContextMenuShortcut>
+        </ContextMenuItem>
+        <ContextMenuItem disabled={!hasOthers} onSelect={() => void closeOtherTabs(id)}>
+          Close others
+        </ContextMenuItem>
+        <ContextMenuItem disabled={!hasRight} onSelect={() => void closeTabsToRight(id)}>
+          Close to the right
+        </ContextMenuItem>
+        <ContextMenuSeparator />
+        <ContextMenuItem onSelect={() => void closeOtherTabs(null)}>Close all</ContextMenuItem>
+        {!isViewTab(id) && (
+          <>
+            <ContextMenuSeparator />
+            <ContextMenuItem onSelect={() => void window.api.shell.showInFolder(id)}>
+              Reveal in file manager
+            </ContextMenuItem>
+          </>
         )}
-      >
-        {dirty ? <span className="bg-primary block size-2 rounded-full group-hover:hidden" /> : null}
-        <HugeiconsIcon
-          icon={Cancel01Icon}
-          size={12}
-          strokeWidth={2}
-          className={cn(dirty && 'hidden group-hover:block')}
-        />
-      </button>
-    </div>
+      </ContextMenuContent>
+    </ContextMenu>
   )
 }

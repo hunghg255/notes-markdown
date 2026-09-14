@@ -47,6 +47,21 @@ export async function closeTab(id: string) {
   useTabsStore.getState().close(id)
 }
 
+/** Close every tab except `keep` (or every tab when `keep` is null). */
+export async function closeOtherTabs(keep: string | null) {
+  for (const t of [...useTabsStore.getState().tabs]) {
+    if (t.id !== keep) await closeTab(t.id)
+  }
+}
+
+/** Close the tabs to the right of `id`. */
+export async function closeTabsToRight(id: string) {
+  const tabs = useTabsStore.getState().tabs
+  const idx = tabs.findIndex((t) => t.id === id)
+  if (idx === -1) return
+  for (const t of tabs.slice(idx + 1)) await closeTab(t.id)
+}
+
 export async function createNote(dir?: string, name?: string, content?: string) {
   const vault = useVaultStore.getState()
   const targetDir = dir ?? vault.selectedDir
