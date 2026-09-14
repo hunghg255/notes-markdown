@@ -21,6 +21,7 @@ Local-first markdown notes app. Every note is a plain `.md` file in a folder you
 - Focus mode (`Ctrl+Shift+F`, Esc to leave): hides chrome, dims other paragraphs, typewriter scrolling
 - Export a note as PDF / HTML / .md, copy as rich text or markdown (… menu in the tab bar)
 - Watches the folder: edits made outside the app show up immediately
+- Settings → **Exclude files & folders**: VS Code-style globs (`node_modules`, `*.draft.md`, `Archive/**`) hidden from the sidebar, search and `Ctrl+P`
 
 ## Development
 

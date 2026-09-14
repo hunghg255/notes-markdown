@@ -3,6 +3,7 @@ import path from 'node:path'
 import { shell } from 'electron'
 import type { NoteFile, NoteIndex, ReplaceResult, SearchHit, TreeNode } from '@shared/types'
 import { indexNote } from '@shared/indexNote'
+import { compileExcludes, type ExcludeMatcher } from '@shared/exclude'
 
 const WELCOME = `# Home
 
@@ -26,7 +27,19 @@ graph LR
 `
 
 export class Vault {
-  constructor(public root: string) {}
+  private isExcluded: ExcludeMatcher
+
+  constructor(
+    public root: string,
+    excludes: string[] = [],
+  ) {
+    this.isExcluded = compileExcludes(excludes)
+  }
+
+  /** Replace the user's exclude patterns; takes effect on the next tree()/scan()/search(). */
+  setExcludes(patterns: string[]): void {
+    this.isExcluded = compileExcludes(patterns)
+  }
 
   /** Ensure the vault folder exists with a minimal starter structure. */
   async init(): Promise<void> {
@@ -62,6 +75,8 @@ export class Vault {
         // attachment folders hold images pasted into notes, not notes
         if (d.isDirectory() && d.name.toLowerCase() === 'attachments') continue
         const abs = path.join(dir, d.name)
+        // user-configured exclude patterns (Settings → Storage)
+        if (this.isExcluded(this.toRel(abs), d.name)) continue
         if (d.isDirectory()) {
           const stat = await fs.stat(abs)
           nodes.push({

@@ -13,6 +13,8 @@ export interface AppConfig {
   zoomLevel?: number
   /** fade lines away from the cursor while in focus mode */
   focusDim?: boolean
+  /** glob patterns (VS Code files.exclude style) hidden from the tree, search and palette */
+  excludePatterns?: string[]
 }
 
 export interface TreeNode {

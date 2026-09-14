@@ -11,7 +11,7 @@ export const getVault = () => vault
 
 export async function setupVault(win: BrowserWindow): Promise<Vault> {
   const config = await loadConfig()
-  vault = new Vault(config.vaultPath)
+  vault = new Vault(config.vaultPath, config.excludePatterns ?? [])
   await vault.init()
   await startWatcher(vault.root, win)
   return vault
@@ -19,7 +19,7 @@ export async function setupVault(win: BrowserWindow): Promise<Vault> {
 
 async function switchVault(win: BrowserWindow, next: string): Promise<AppConfig> {
   const config = await updateConfig({ vaultPath: next })
-  vault = new Vault(next)
+  vault = new Vault(next, config.excludePatterns ?? [])
   await vault.init()
   await startWatcher(vault.root, win)
   win.webContents.send(IPC.eventVaultChanged, { type: 'vaultChanged', path: next } satisfies VaultEvent)
@@ -35,7 +35,9 @@ export function registerIpc(win: BrowserWindow): void {
       await updateConfig(rest)
       return switchVault(win, vaultPath)
     }
-    return updateConfig(patch)
+    const next = await updateConfig(patch)
+    if ('excludePatterns' in patch) vault.setExcludes(next.excludePatterns ?? [])
+    return next
   })
 
   ipcMain.handle(IPC.vaultPickFolder, async () => {

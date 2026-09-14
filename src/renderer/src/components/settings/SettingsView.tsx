@@ -1,8 +1,12 @@
+import { useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Switch } from '@/components/ui/switch'
+import { Textarea } from '@/components/ui/textarea'
+import { scheduleIndexRefresh } from '@/stores/indexStore'
 import { useSettingsStore } from '@/stores/settingsStore'
+import { useVaultStore } from '@/stores/vaultStore'
 import { ACCENTS, type Accent, type Theme } from '@shared/types'
 import { cn } from '@/lib/utils'
 
@@ -33,6 +37,13 @@ export function SettingsView() {
           </Row>
           <Row label="Autosave" hint="Write changes to disk 500ms after you stop typing. Ctrl+S always saves.">
             <Switch checked={config.autosave} onCheckedChange={(v) => void update({ autosave: v })} />
+          </Row>
+          <Row
+            label="Exclude files & folders"
+            hint="One glob per line, like VS Code's files.exclude. Matches are hidden from the sidebar, search and Ctrl+P."
+            stack
+          >
+            <ExcludeEditor />
           </Row>
         </Section>
 
@@ -106,21 +117,74 @@ function Section({ title, description, children }: { title: string; description?
   )
 }
 
-function Row({ label, hint, children }: { label: string; hint?: string; children: React.ReactNode }) {
+function Row({
+  label,
+  hint,
+  stack,
+  children,
+}: {
+  label: string
+  hint?: string
+  /** render the control below the label at full width instead of on the right */
+  stack?: boolean
+  children: React.ReactNode
+}) {
   return (
-    <>
-      <div className="flex items-center justify-between gap-6 px-4 py-3 [&:not(:first-child)]:border-t">
-        <div className="min-w-0">
-          <div className="text-sm font-medium">{label}</div>
-          {hint && (
-            <div className="text-muted-foreground truncate text-xs" title={hint}>
-              {hint}
-            </div>
-          )}
-        </div>
-        <div className="shrink-0">{children}</div>
+    <div
+      className={cn(
+        'px-4 py-3 [&:not(:first-child)]:border-t',
+        stack ? 'flex flex-col gap-3' : 'flex items-center justify-between gap-6',
+      )}
+    >
+      <div className="min-w-0">
+        <div className="text-sm font-medium">{label}</div>
+        {hint && (
+          <div className={cn('text-muted-foreground text-xs', !stack && 'truncate')} title={hint}>
+            {hint}
+          </div>
+        )}
       </div>
-    </>
+      <div className={stack ? 'w-full' : 'shrink-0'}>{children}</div>
+    </div>
+  )
+}
+
+const parsePatterns = (text: string) =>
+  text
+    .split('\n')
+    .map((l) => l.trim())
+    .filter(Boolean)
+
+/** Multi-line editor for `excludePatterns`; commits on blur so the tree isn't rebuilt on every keystroke. */
+function ExcludeEditor() {
+  const patterns = useSettingsStore((s) => s.config.excludePatterns)
+  const update = useSettingsStore((s) => s.update)
+  const [text, setText] = useState(() => (patterns ?? []).join('\n'))
+
+  // keep the draft in sync when the config changes elsewhere (e.g. vault switch reloads settings)
+  useEffect(() => {
+    setText((patterns ?? []).join('\n'))
+  }, [patterns])
+
+  const commit = async () => {
+    const next = parsePatterns(text)
+    const current = patterns ?? []
+    if (next.length === current.length && next.every((p, i) => p === current[i])) return
+    await update({ excludePatterns: next })
+    await useVaultStore.getState().refresh()
+    scheduleIndexRefresh(0)
+  }
+
+  return (
+    <Textarea
+      value={text}
+      onChange={(e) => setText(e.target.value)}
+      onBlur={() => void commit()}
+      placeholder={'node_modules\n*.draft.md\nArchive/**'}
+      spellCheck={false}
+      rows={4}
+      className="min-h-24 font-mono text-xs md:text-xs"
+    />
   )
 }
 

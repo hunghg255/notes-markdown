@@ -1,5 +1,6 @@
 import type { Api, AppConfig, TreeNode, VaultEvent } from '@shared/types'
 import { indexNote } from '@shared/indexNote'
+import { compileExcludes } from '@shared/exclude'
 
 /**
  * In-memory stand-in for the Electron preload API so the renderer can be
@@ -31,6 +32,17 @@ export function installMockApi() {
 
   const emit = (e: VaultEvent) => listeners.forEach((l) => l(e))
 
+  // an entry is hidden when it or any parent folder matches an exclude pattern
+  const hidden = (path: string) => {
+    const isExcluded = compileExcludes(config.excludePatterns)
+    const parts = path.split('/')
+    for (let i = 1; i <= parts.length; i++) {
+      if (isExcluded(parts.slice(0, i).join('/'), parts[i - 1])) return true
+    }
+    return false
+  }
+  const visibleFiles = () => [...files].filter(([path]) => !hidden(path))
+
   const tree = (): TreeNode[] => {
     const root: TreeNode[] = []
     const dirNodes = new Map<string, TreeNode>()
@@ -45,8 +57,8 @@ export function installMockApi() {
       }
       return node.children!
     }
-    for (const d of [...dirs].sort()) ensureDir(d)
-    for (const [path, f] of files) {
+    for (const d of [...dirs].sort()) if (!hidden(d)) ensureDir(d)
+    for (const [path, f] of visibleFiles()) {
       const dir = path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : ''
       ensureDir(dir).push({
         name: path.slice(path.lastIndexOf('/') + 1).replace(/\.md$/, ''),
@@ -121,7 +133,7 @@ export function installMockApi() {
       search: async (query) => {
         const q = query.toLowerCase()
         const hits = []
-        for (const [path, f] of files) {
+        for (const [path, f] of visibleFiles()) {
           const lines = f.content.split('\n')
           for (let i = 0; i < lines.length; i++) {
             if (lines[i].toLowerCase().includes(q)) hits.push({ path, line: i + 1, preview: lines[i].trim() })
@@ -131,7 +143,7 @@ export function installMockApi() {
       },
       exists: async (rel) => files.has(rel) || dirs.has(rel),
       scan: async () =>
-        [...files].map(([path, f]) => ({
+        visibleFiles().map(([path, f]) => ({
           ...indexNote(f.content),
           path,
           name: path.slice(path.lastIndexOf('/') + 1).replace(/\.md$/, ''),
