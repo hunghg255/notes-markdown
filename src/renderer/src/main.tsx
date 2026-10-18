@@ -1,11 +1,15 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { isMyGo } from 'mygo-runtime'
 import 'katex/dist/katex.min.css'
 import './index.css'
 
 async function bootstrap() {
-  if (!window.api && import.meta.env.DEV) {
-    // running in a plain browser tab (no Electron preload): use an in-memory vault
+  if (isMyGo()) {
+    const { installMygoApi } = await import('./lib/mygoApi')
+    installMygoApi()
+  } else if (import.meta.env.DEV) {
+    // running in a plain browser tab (no MyGo runtime): use an in-memory vault
     const { installMockApi } = await import('./lib/mockApi')
     installMockApi()
   }

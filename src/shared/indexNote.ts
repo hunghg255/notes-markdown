@@ -1,3 +1,4 @@
+// Mirrored in Go by src/main/indexnote.go (used by Vault.Scan); keep the two in sync.
 import type { NoteIndex } from './types'
 
 const TAG_RE = /(^|\s)#([\p{L}\p{N}_][\p{L}\p{N}_\-/]*)/gu

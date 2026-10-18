@@ -4,46 +4,47 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-Local-first markdown notes desktop app (Electron 44 + electron-vite 6 + Vite 8 + React 19 + Tailwind 4 + shadcn/ui + zustand + CodeMirror 6). Every note is a plain `.md` file inside a user-chosen "vault" folder (default `~/Desktop/Notes`). See `README.md` for the feature list.
+Local-first markdown notes desktop app ([MyGo](https://github.com/egoist/mygo) 0.5 — Go backend + system webview — with Vite 8 + React 19 + Tailwind 4 + shadcn/ui + zustand + CodeMirror 6). Every note is a plain `.md` file inside a user-chosen "vault" folder (default `~/Desktop/Notes`). See `README.md` for the feature list.
 
 ## Commands
 
 ```bash
 pnpm install
-node node_modules/electron/install.js   # only if pnpm skipped Electron's postinstall
-pnpm dev            # Electron + Vite HMR (also serves renderer at http://localhost:5173)
-pnpm typecheck      # tsc for node (main/preload/shared) AND web (renderer) projects
-pnpm build          # bundles to out/
-pnpm dist           # build + electron-builder installer (NSIS / dmg / AppImage)
+pnpm dev            # mygo dev: builds/restarts the Go app on .go changes, runs Vite (http://localhost:5173), regenerates the TS client
+pnpm typecheck      # tsc for tsconfig.node.json (vite/mygo config) AND tsconfig.web.json (renderer + shared), then go vet
+pnpm build          # mygo build: vite build -> out/renderer, embedded into the exe; app + installer in release/<os>-<arch>/
+pnpm generate       # mygo generate: rewrite src/renderer/src/lib/mygo.ts from the bound Go services/events
 ```
 
-There is no test runner and no lint script; `pnpm typecheck` is the only verification step. Formatting follows `.prettierrc` (no semicolons, single quotes, 120 cols, trailing commas).
+Needs Go 1.27+. `mygo.config.ts` (name, identifier, version from package.json, `main: ./src/main`, devUrl/devCommand, frontendDist, bindings path) drives the CLI. There is no test runner and no lint script; `pnpm typecheck` is the only verification step. Formatting follows `.prettierrc` (no semicolons, single quotes, 120 cols, trailing commas).
 
-**Browser-only mode:** opening http://localhost:5173 during `pnpm dev` in a normal browser has no `window.api` (no preload), so `src/renderer/src/main.tsx` installs `src/renderer/src/lib/mockApi.ts` — an in-memory vault implementing the same `Api` interface. Useful for pure UI work; any new `Api` method must also be added to the mock or the browser mode breaks.
+**Browser-only mode:** opening http://localhost:5173 during `pnpm dev` in a normal browser has no MyGo runtime (`isMyGo()` is false), so `src/renderer/src/main.tsx` installs `src/renderer/src/lib/mockApi.ts` — an in-memory vault implementing the same `Api` interface. Useful for pure UI work; any new `Api` method must also be added to the mock or the browser mode breaks.
 
 ## Architecture
 
-### Three processes, one typed contract
+### Go backend, one typed contract
 
-`src/shared/types.ts` is the single source of truth for the main↔renderer boundary: the `IPC` channel-name constants, the `Api` interface, and the data types (`AppConfig`, `TreeNode`, `VaultEvent`, …). Adding an IPC feature touches, in order:
+`src/shared/types.ts` holds the `Api` interface the renderer codes against and the data types (`AppConfig`, `TreeNode`, `VaultEvent`, …). The Go side mirrors the data types in `src/main/types.go` (JSON tags = TS field names). Go services are exposed with `mygo.BindAs` in `src/main/main.go`; `mygo generate` turns them into `src/renderer/src/lib/mygo.ts` (generated, never edit), and `src/renderer/src/lib/mygoApi.ts` implements `window.api` on top of it (null ↔ `""` mapping, base64 for `[]byte`, window controls via `mygo-runtime`'s `currentWindow`). Adding a backend feature touches, in order:
 
-1. `src/shared/types.ts` — add the channel constant and the `Api` method signature
-2. `src/main/ipc.ts` — `ipcMain.handle(...)` delegating to `Vault` (`src/main/vault.ts`) or config
-3. `src/preload/index.ts` — the `contextBridge` implementation of the `Api` method
-4. `src/renderer/src/lib/mockApi.ts` — browser stand-in
+1. `src/shared/types.ts` — the `Api` method signature
+2. `src/main/services.go` — an exported method on a bound service (`ConfigService`, `VaultService`, `ShellService`, `ExportService`, `ViewService`), usually delegating to `Vault` (`src/main/vault.go`); a first `context.Context` param gives `mygo.CallerWindow(ctx)` for dialogs
+3. `pnpm generate` (or just run `pnpm dev`) to refresh `lib/mygo.ts`
+4. `src/renderer/src/lib/mygoApi.ts` — wire the `Api` method to the generated client
+5. `src/renderer/src/lib/mockApi.ts` — browser stand-in
 
-The renderer only ever talks to `window.api` (typed via `src/preload/index.d.ts`); it never imports from `electron`.
+The renderer only ever talks to `window.api` (typed via `src/renderer/src/api.d.ts`); only `mygoApi.ts` and `main.tsx` import `mygo-runtime`/the generated client.
 
-Path aliases: `@/` → `src/renderer/src`, `@shared/` → `src/shared`, `@resources/` → `resources` (configured in both `electron.vite.config.ts` and the tsconfigs).
+Path aliases: `@/` → `src/renderer/src`, `@shared/` → `src/shared`, `@resources/` → `resources` (configured in both `vite.config.ts` and the tsconfigs).
 
-### Main process (`src/main`)
+### Go app (`src/main`, package `main`)
 
-- `vault.ts` — `Vault` class: all filesystem ops. `resolve(rel)` refuses paths that escape the vault root; every public method goes through it. Writes are atomic (`.tmp` + rename); `create`/`mkdir` auto-suffix ` 1`, ` 2` on collision; `delete` uses the OS trash. Tree only lists `.md`/`.markdown` files and skips dotfiles.
-- `watcher.ts` — one chokidar watcher on the vault root that forwards add/change/unlink(/Dir) events to the renderer as `VaultEvent` over `IPC.eventVaultChanged`. `.tmp` files are ignored so our own atomic writes don't double-fire.
-- `config.ts` — `config.json` in Electron `userData`, cached in memory. Changing `vaultPath` through `config:set` triggers `switchVault` in `ipc.ts`, which re-inits the vault, restarts the watcher, and emits a `vaultChanged` event.
-- `index.ts` — frameless window (`titleBarStyle: 'hidden'`, custom overlay on Windows/Linux) and the privileged `vault://local/<rel>` protocol that serves images/attachments from inside the vault.
+- `vault.go` — `Vault`: all filesystem ops. `Resolve(rel)` refuses paths that escape the vault root; every public method goes through it. Writes are atomic (`.tmp` + rename); `Create`/`Mkdir` auto-suffix ` 1`, ` 2` on collision; `Delete` uses the OS trash (`mygo.Shell.TrashItem`). Tree only lists `.md`/`.markdown` files and skips dotfiles. `exclude.go` and `indexnote.go` are Go ports of `src/shared/exclude.ts` / `indexNote.ts` (the TS versions are still used by the renderer/mock) — keep each pair in sync.
+- `watcher.go` — one recursive `mygo.WatchFiles` on the vault root; create/write/remove/rename are mapped to add/change/unlink(/Dir) `VaultEvent`s and broadcast through the typed event `VaultChanged` (`"vault:changed"` → `events.vaultChanged` in TS). Dotfiles and `.tmp` files are ignored so our own atomic writes don't double-fire.
+- `config.go` — `config.json` in `App.Path(PathUserData)` (`%AppData%/Notes`), cached in memory; on first run it falls back to the Electron build's `%AppData%/notes-markdown/config.json`. `ConfigService.Set` takes the patch as `map[string]any`; changing `vaultPath` re-inits the vault, restarts the watcher and emits `vaultChanged`; `theme` is also applied natively with `mygo.Theme.SetSource`.
+- `main.go` — binds the services, registers the `vault` protocol (`vault://localhost/<rel>`, which WebView2 serves as `http://vault.localhost/<rel>` — see `resolveImageSrc`), and in `App.WhenReady` loads config, opens the vault and creates the window (`TitleBarStyle: TitleBarHidden`, `TitleBarHeight: 40`; MyGo draws the native controls and exposes `--mygo-titlebar-inset-*` CSS vars, used by `TabBar`). Startup work must stay inside `WhenReady`: `mygo generate` runs `main` up to `App.Run`.
+- Bound methods run on their own goroutines — guard shared state (`vaultMu`, `configMu`).
 
-**All vault paths are vault-relative with forward slashes** on both sides of IPC; `Vault.toRel` normalises `path.sep`.
+**All vault paths are vault-relative with forward slashes** on both sides of IPC; `Vault.ToRel` normalises `filepath.Separator`.
 
 ### Renderer state (zustand, `src/renderer/src/stores`)
 
@@ -59,7 +60,7 @@ Cross-store orchestration lives in `src/renderer/src/lib/actions.ts` (`openNote`
 
 ### External change handling (`src/renderer/src/hooks/useVaultWatcher.ts`)
 
-Subscribes to `window.api.vault.onChanged`. On `change`, it re-reads the file and compares to the in-memory doc: identical content ⇒ it was our own write, ignore; different and not dirty ⇒ reload; different and dirty ⇒ currently a no-op (conflict toast is commented out). On `unlink` it closes the tab; on `vaultChanged` it closes everything and reloads settings. Tree refreshes are debounced 150 ms.
+Subscribes to `window.api.vault.onChanged` (MyGo watch events are debounced 200 ms and diffed, so treat them as hints). On `change`, it re-reads the file and compares to the in-memory doc: identical content ⇒ it was our own write, ignore; different and not dirty ⇒ reload; different and dirty ⇒ currently a no-op (conflict toast is commented out). On `unlink` it closes the tab; on `vaultChanged` it closes everything and reloads settings. Tree refreshes are debounced 150 ms.
 
 ### Editor (`src/renderer/src/editor`)
 
@@ -74,6 +75,7 @@ Subscribes to `window.api.vault.onChanged`. On `change`, it re-reads the file an
 
 - Notes convention: daily notes live in `Daily Notes/<Weekday, Month D, YYYY>.md`; if `Templates/Daily.md` exists it is used with `{{title}}`/`{{date}}` substitution (`lib/notes.ts`, `lib/actions.ts`).
 - `[[wiki links]]` resolve by exact vault path first, then by title (case-insensitive), preferring the same folder; unresolved links create the note next to the current one on click.
-- Images in notes resolve to `vault://local/<encoded rel path>` (`resolveImageSrc`).
+- Images in notes resolve to `vault://localhost/<encoded rel path>` (`http://vault.localhost/…` on Windows) via `resolveImageSrc`; the CSP in `src/renderer/index.html` allows both.
 - shadcn components (`components/ui`) are generated via `pnpm dlx shadcn@latest add …` with the `radix-nova` style (`components.json`); icons are `lucide-react` (also `@hugeicons/react` is a dependency).
+- Drag regions: `.app-drag` / `.app-no-drag` set both `--app-region` (MyGo) and `-webkit-app-region`.
 - Global state must be zustand stores — no React Context for app state (see `.agents/skills/use-zustand`). `.agents/skills/` also vendors shadcn, Vercel React best-practices, and web-animation guidance.

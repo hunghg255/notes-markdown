@@ -5,6 +5,8 @@
  * - A pattern without `/` matches the entry name at any depth (`node_modules`, `*.draft.md`).
  * - A pattern with `/` matches the whole vault-relative path (`Archive/**`, `Projects/Old`).
  * - Matching is case-insensitive, like the `.md` extension check in the vault walker.
+ *
+ * Mirrored in Go by src/main/exclude.go (the vault side); keep the two in sync.
  */
 
 export type ExcludeMatcher = (rel: string, name: string) => boolean

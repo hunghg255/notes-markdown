@@ -37,7 +37,9 @@ export const isExternalUrl = (href: string) => /^[a-z][a-z0-9+.-]*:/i.test(href)
 export function resolveImageSrc(src: string, notePath: string): string {
   if (isExternalUrl(src)) return src
   const rel = resolveRelative(notePath, decodeURI(src))
-  return `vault://local/${rel.split('/').map(encodeURIComponent).join('/')}`
+  // WebView2 serves custom schemes under http://<scheme>.localhost
+  const base = window.api.platform === 'win32' ? 'http://vault.localhost' : 'vault://localhost'
+  return `${base}/${rel.split('/').map(encodeURIComponent).join('/')}`
 }
 
 /**

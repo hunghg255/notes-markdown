@@ -73,32 +73,6 @@ export type VaultEvent =
   | { type: 'addDir' | 'unlinkDir'; path: string }
   | { type: 'vaultChanged'; path: string }
 
-export const IPC = {
-  configGet: 'config:get',
-  configSet: 'config:set',
-  vaultPickFolder: 'vault:pickFolder',
-  vaultTree: 'vault:tree',
-  vaultRead: 'vault:read',
-  vaultWrite: 'vault:write',
-  vaultCreate: 'vault:create',
-  vaultMkdir: 'vault:mkdir',
-  vaultRename: 'vault:rename',
-  vaultDelete: 'vault:delete',
-  vaultSearch: 'vault:search',
-  vaultExists: 'vault:exists',
-  vaultScan: 'vault:scan',
-  vaultWriteBinary: 'vault:writeBinary',
-  vaultReplace: 'vault:replace',
-  exportFile: 'export:file',
-  shellOpenExternal: 'shell:openExternal',
-  shellShowInFolder: 'shell:showInFolder',
-  windowMinimize: 'window:minimize',
-  windowMaximize: 'window:maximize',
-  windowClose: 'window:close',
-  windowZoom: 'window:zoom',
-  eventVaultChanged: 'vault:changed',
-} as const
-
 export interface Api {
   config: {
     get(): Promise<AppConfig>
@@ -126,7 +100,7 @@ export interface Api {
     showInFolder(rel: string): Promise<void>
   }
   export: {
-    /** show a save dialog and write the file; kind 'pdf' renders the html via Chromium */
+    /** show a save dialog and write the file; kind 'pdf' renders the html in a hidden webview */
     file(kind: 'pdf' | 'html' | 'md', suggestedName: string, content: string): Promise<string | null>
   }
   window: {
@@ -136,5 +110,5 @@ export interface Api {
     /** zoom the whole UI; returns the new zoom level (0 = 100%) */
     zoom(dir: 'in' | 'out' | 'reset'): Promise<number>
   }
-  platform: NodeJS.Platform
+  platform: 'darwin' | 'linux' | 'win32'
 }

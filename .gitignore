@@ -4,3 +4,6 @@ out
 *.log
 .DS_Store
 *.tsbuildinfo
+.mygo
+release
+mygo_windows_*.syso
