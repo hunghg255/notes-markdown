@@ -60,8 +60,8 @@ export function TabBar() {
     <div
       className={cn(
         'app-drag flex h-10 shrink-0 items-center gap-1 pl-2',
-        // leave room for the Windows/Linux window controls MyGo draws over the page
-        'pr-[calc(var(--mygo-titlebar-inset-right,0px)+0.5rem)]',
+        // leave room for the Windows window controls myzig draws over the page (set in src/main/main.zig)
+        'pr-[calc(var(--myzig-titlebar-inset-right,0px)+0.5rem)]',
         isMac && !sidebarOpen && 'pl-20',
       )}
     >

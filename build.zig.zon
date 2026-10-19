@@ -1,0 +1,18 @@
+.{
+    .name = .notes,
+    .version = "0.1.3",
+    .fingerprint = 0x11ba68c4094a1b9,
+    .minimum_zig_version = "0.17.0",
+    // myzig is a checkout next to this repository (github.com/hunghg255/myzig);
+    // the plugins depend on the myzig two directories up, so all share one.
+    .dependencies = .{
+        .myzig = .{ .path = "../myzig" },
+        .myzig_watch = .{ .path = "../myzig/plugins/watch" },
+        .mainthread = .{ .path = "../myzig/plugins/mainthread" },
+    },
+    .paths = .{
+        "build.zig",
+        "build.zig.zon",
+        "src/main",
+    },
+}

@@ -1,0 +1,16 @@
+// The app, for the myzig CLI: `myzig dev`, `myzig build`, `myzig generate`.
+.{
+    .name = "Notes",
+    .identifier = "com.giahung.notes-markdown",
+    .icon = "resources/icon.png",
+    .executable = "notes",
+    // the renderer's sources: `myzig dev`/`generate` write myzig.js and myzig.d.ts here, and
+    // `myzig dev` leaves the folder to Vite (only Zig changes rebuild the app)
+    .frontend = "src/renderer",
+    // what the app embeds: `vite build`'s output
+    .frontend_dist = "out/renderer",
+    .dev_url = "http://localhost:5173",
+    .dev_command = "pnpm dev:web",
+    .build_command = "pnpm build:web",
+    .out = "release",
+}

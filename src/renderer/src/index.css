@@ -202,7 +202,7 @@
   }
 }
 
-/* MyGo reads --app-region (and -webkit-app-region where the webview supports it) */
+/* myzig reads --app-region (and -webkit-app-region where the webview supports it) */
 .app-drag {
   --app-region: drag;
   -webkit-app-region: drag;
