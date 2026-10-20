@@ -3,7 +3,7 @@
 Local-first markdown notes app. Every note is a plain `.md` file in a folder you choose
 (default: `~/Desktop/Notes`), so it works with git, Obsidian, Dropbox, etc.
 
-- [MyGo](https://github.com/egoist/mygo) (Go backend, system webview) · Vite 8 · React 19 · Tailwind 4 · shadcn/ui · zustand
+- [myzig](https://github.com/hunghg255/myzig) (Zig backend, system webview) · Vite 8 · React 19 · Tailwind 4 · shadcn/ui · zustand
 - CodeMirror 6 **live preview** editor (Obsidian-style): headings, bold/italic, links,
   task checkboxes, code blocks with syntax highlighting, KaTeX math, Mermaid diagrams
   (via `beautiful-mermaid`), images from the vault, `#tags`, YAML frontmatter, `[[wiki links]]` with `[[` autocomplete
@@ -25,14 +25,17 @@ Local-first markdown notes app. Every note is a plain `.md` file in a folder you
 
 ## Development
 
-Requires Go 1.27+, pnpm and Node 22.6+ (Windows 10 also needs the WebView2 Runtime; Linux needs WebKitGTK 4.1).
+Requires Zig 0.17, a checkout of [myzig](https://github.com/hunghg255/myzig) next to this repository
+(`../myzig`, with its CLI built: `cd ../myzig/cli && zig build -Doptimize=ReleaseSmall`, then put
+`cli/zig-out/bin` on the `PATH`), pnpm and Node 22.6+ (Windows 10 also needs the WebView2 Runtime;
+Linux needs WebKitGTK 4.1).
 
 ```bash
 pnpm install
-pnpm dev            # mygo dev: Go app + Vite HMR, rebuilds/restarts on .go changes
-pnpm typecheck      # tsc (vite/mygo config + renderer) and go vet
-pnpm build          # mygo build: app + installer in release/<os>-<arch>/
-pnpm generate       # regenerate src/renderer/src/lib/mygo.ts from the Go services
+pnpm dev            # myzig dev: Zig app + Vite HMR, rebuilds/restarts on .zig changes
+pnpm typecheck      # tsc (vite config + renderer) and zig build test
+pnpm build          # myzig build: vite build, then the app and its packages in release/<os>-<arch>/
+pnpm generate       # regenerate src/renderer/myzig.js + myzig.d.ts from the Zig services
 ```
 
 `pnpm dev` also serves the renderer at http://localhost:5173 — opening it in a browser
@@ -41,11 +44,11 @@ uses an in-memory mock vault (`src/renderer/src/lib/mockApi.ts`), handy for UI w
 ## Layout
 
 ```
-src/main       Go app (MyGo): window, config.json (userData), vault fs ops, file watcher, bound services
-src/shared     Api interface + data types shared by the renderer (Go mirrors them in src/main/types.go)
+src/main       Zig app (myzig): window, config.json, vault fs ops, file watcher, bound services
+src/shared     Api interface + data types shared by the renderer (Zig mirrors them in src/main/types.zig)
 src/renderer   React app
-  lib/mygo.ts      generated typed client of the Go services (`mygo generate`, do not edit)
-  lib/mygoApi.ts   window.api implemented on top of it
+  myzig.js/.d.ts   generated typed client of the Zig services (`myzig generate`, do not edit)
+  src/lib/myzigApi.ts  window.api implemented on top of it
   editor/          CodeMirror setup, theme, live-preview decorations, commands, completions
   stores/          zustand: vault tree, tabs, open docs/autosave, settings, ui
   components/      sidebar, tabs, editor, settings, command palette, shadcn ui

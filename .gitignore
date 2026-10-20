@@ -4,6 +4,7 @@ out
 *.log
 .DS_Store
 *.tsbuildinfo
-.mygo
+.zig-cache
+zig-out
+.myzig
 release
-mygo_windows_*.syso

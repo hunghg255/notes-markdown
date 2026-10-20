@@ -14,12 +14,12 @@ export default defineConfig({
     },
   },
   server: {
-    // `mygo dev` loads this address (devUrl in mygo.config.ts)
+    // `myzig dev` loads this address (dev_url in myzig.zon)
     port: 5173,
     strictPort: true,
   },
   build: {
-    // embedded into the app by `mygo build` (frontendDist in mygo.config.ts)
+    // embedded into the app by `myzig build` (frontend_dist in myzig.zon)
     outDir: resolve('out/renderer'),
     emptyOutDir: true,
   },

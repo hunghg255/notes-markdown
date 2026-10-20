@@ -17,7 +17,6 @@
     "resolveJsonModule": true
   },
   "include": [
-    "vite.config.ts",
-    "mygo.config.ts"
+    "vite.config.ts"
   ]
 }

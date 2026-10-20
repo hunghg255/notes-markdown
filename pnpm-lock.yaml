@@ -77,9 +77,6 @@ dependencies:
   marked:
     specifier: ^18.0.13
     version: 18.0.13
-  mygo-runtime:
-    specifier: ^0.5.5
-    version: 0.5.5
   node-emoji:
     specifier: ^2.2.0
     version: 2.2.0
@@ -139,9 +136,6 @@ devDependencies:
   bumpp:
     specifier: 12.3.0
     version: 12.3.0
-  mygo-cli:
-    specifier: ^0.5.5
-    version: 0.5.5
   tailwindcss:
     specifier: ^4.3.3
     version: 4.3.3
@@ -780,54 +774,6 @@ packages:
   /@dotenvx/primitives@0.8.0:
     resolution: {integrity: sha512-VYJy0uhFm9zTJ1TxBaW/pA8bjbOM/OttaNMwZ1RHG4JKyRG7DhSdiqD1ipQoAyoD22olUtxbP78W9xY3Wd11bg==}
     dev: false
-
-  /@egoist/mygo-cli-darwin-arm64@0.5.5:
-    resolution: {integrity: sha512-k2G3zF6bw2a0rra58KFSlzP6o9G69WPLvNBOzflphH40BOf9tZxKx4YTHujPazC6eJxnvXErMJ/vf+9nk93dsg==}
-    cpu: [arm64]
-    os: [darwin]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@egoist/mygo-cli-darwin-x64@0.5.5:
-    resolution: {integrity: sha512-9+V8Ck65I4fNFCgzMeJtD8AY3EoelCNX7ShR/iJukjvrBXfTroXgCua16UBEMiLYqtTF+vxA49tLWUSEY47tOg==}
-    cpu: [x64]
-    os: [darwin]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@egoist/mygo-cli-linux-arm64@0.5.5:
-    resolution: {integrity: sha512-BU9At6Ji9JX9/y9bT2LK/R7UMtMwrHZ6ygg7JCMrDW7NeZZ0+vaHVp5hQFJbGK/FhmzYC/M6WMIDy+SYODCojw==}
-    cpu: [arm64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@egoist/mygo-cli-linux-x64@0.5.5:
-    resolution: {integrity: sha512-YQsuof6XcdMHVJFFT90aN23UxyKTxQSscvqKm6X38TPlHANkJ8AfWLEQsljOrnUjrp0S3+Fnzn0NMEbG1JGbWw==}
-    cpu: [x64]
-    os: [linux]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@egoist/mygo-cli-win32-arm64@0.5.5:
-    resolution: {integrity: sha512-LIZ8gL2c0nfwogHm6wmKKi4pPosCHFgUbl6PuuUMAkp2Nw9c/7v2kN26YG/GkIdH01UlOr2F+7OsmeAJvOz71Q==}
-    cpu: [arm64]
-    os: [win32]
-    requiresBuild: true
-    dev: true
-    optional: true
-
-  /@egoist/mygo-cli-win32-x64@0.5.5:
-    resolution: {integrity: sha512-u2fsXgjt1CWpK85PdgM9Yg8MfCAJ85RSRcIv69Qxu/Vljnp5Rd/v0c0kunFme4QEN9HIkmujnDj3j9aLoZf+Uw==}
-    cpu: [x64]
-    os: [win32]
-    requiresBuild: true
-    dev: true
-    optional: true
 
   /@floating-ui/core@1.8.0:
     resolution: {integrity: sha512-0CIZ5itps/8x7BG8dEIhs53BvCUH2PCoogtakwRTut+Arm58sJooJ0AuZhLw2HJYIR5cMLNPBSS728sPho2khQ==}
@@ -4394,23 +4340,6 @@ packages:
 
   /ms@2.1.3:
     resolution: {integrity: sha512-6FlzubTLZG3J2a/NVCAleEhjzq5oxgHyaCU9yYXvcLsvoVaHJq/s5xXI6/XXP6tz7R9xAOtHnSO/tXtF3WRTlA==}
-    dev: false
-
-  /mygo-cli@0.5.5:
-    resolution: {integrity: sha512-LkddjY8pBO9FygT6o3lG9mV2OUfq+U4a5W2REMg0zmT576MLIQ1tab9k1aNnH2H8bHTsPE5nw8QNuB1jvG5MoQ==}
-    engines: {node: '>=18'}
-    hasBin: true
-    optionalDependencies:
-      '@egoist/mygo-cli-darwin-arm64': 0.5.5
-      '@egoist/mygo-cli-darwin-x64': 0.5.5
-      '@egoist/mygo-cli-linux-arm64': 0.5.5
-      '@egoist/mygo-cli-linux-x64': 0.5.5
-      '@egoist/mygo-cli-win32-arm64': 0.5.5
-      '@egoist/mygo-cli-win32-x64': 0.5.5
-    dev: true
-
-  /mygo-runtime@0.5.5:
-    resolution: {integrity: sha512-51cwqDKMW10f0YjuoTfpd3rp3lFhP9sofSEKysqkIhRk8gheAqDyfDOhG51SCKRdJGvJDYUNpjbTe1SRxKP7Mw==}
     dev: false
 
   /nanoid@3.3.19:
